@@ -21,18 +21,26 @@ namespace Azure.ResourceManager.Compute.Tests
         {
         }
 
-        private async Task<GalleryImage> CreateGalleryImageAsync(string galleryImageName)
+        private async Task<Gallery> CreateGalleryAsync(string galleryName)
         {
             _resourceGroup = await CreateResourceGroupAsync();
-            var galleryName = Recording.GenerateAssetName("testGallery_");
             var galleryInput = ResourceDataHelper.GetBasicGalleryData(DefaultLocation);
-            _gallery = await _resourceGroup.GetGalleries().CreateOrUpdateAsync(galleryName, galleryInput);
+            var lro = await _resourceGroup.GetGalleries().CreateOrUpdateAsync(galleryName, galleryInput);
+            _gallery = lro.Value;
+            return _gallery;
+        }
+
+        private async Task<GalleryImage> CreateGalleryImageAsync(string galleryImageName)
+        {
+            var galleryName = Recording.GenerateAssetName("testGallery_");
+            _gallery = await CreateGalleryAsync(galleryName);
             var identifier = ResourceDataHelper.GetGalleryImageIdentifier(
                     Recording.GenerateAssetName("publisher"),
                     Recording.GenerateAssetName("offer"),
                     Recording.GenerateAssetName("sku"));
             var imageInput = ResourceDataHelper.GetBasicGalleryImageData(DefaultLocation, OperatingSystemTypes.Linux, identifier);
-            return await _gallery.GetGalleryImages().CreateOrUpdateAsync(galleryImageName, imageInput);
+            var lro = await _gallery.GetGalleryImages().CreateOrUpdateAsync(galleryImageName, imageInput);
+            return lro.Value;
         }
 
         [TestCase]
@@ -42,16 +50,6 @@ namespace Azure.ResourceManager.Compute.Tests
             var name = Recording.GenerateAssetName("testGallery_");
             var image = await CreateGalleryImageAsync(name);
             await image.DeleteAsync();
-        }
-
-        [TestCase]
-        [RecordedTest]
-        public async Task StartDelete()
-        {
-            var name = Recording.GenerateAssetName("testGallery_");
-            var image = await CreateGalleryImageAsync(name);
-            var deleteOp = await image.StartDeleteAsync();
-            await deleteOp.WaitForCompletionResponseAsync();
         }
 
         [TestCase]
@@ -67,7 +65,6 @@ namespace Azure.ResourceManager.Compute.Tests
 
         [TestCase]
         [RecordedTest]
-        [Ignore("There is a bug in OperationInternals causing we cannot handle this kind of PATCH LRO right now")]
         public async Task Update()
         {
             var name = Recording.GenerateAssetName("testGallery_");
@@ -78,7 +75,8 @@ namespace Azure.ResourceManager.Compute.Tests
                 OsType = OperatingSystemTypes.Linux, // We have to put this here, otherwise we get a 409 Changing property 'galleryImage.properties.osType' is not allowed.
                 Description = description
             };
-            GalleryImage updatedGalleryImage = await image.UpdateAsync(update);
+            var lro = await image.UpdateAsync(update);
+            GalleryImage updatedGalleryImage = lro.Value;
 
             Assert.AreEqual(description, updatedGalleryImage.Data.Description);
         }

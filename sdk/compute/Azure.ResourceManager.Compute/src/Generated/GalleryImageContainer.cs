@@ -46,9 +46,10 @@ namespace Azure.ResourceManager.Compute
         /// <summary> Create or update a gallery image definition. </summary>
         /// <param name="galleryImageName"> The name of the gallery image definition to be created or updated. The allowed characters are alphabets and numbers with dots, dashes, and periods allowed in the middle. The maximum length is 80 characters. </param>
         /// <param name="galleryImage"> Parameters supplied to the create or update gallery image operation. </param>
+        /// <param name="waitForCompletion"> Waits for the completion of the long running operations. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="galleryImageName"/> or <paramref name="galleryImage"/> is null. </exception>
-        public virtual Response<GalleryImage> CreateOrUpdate(string galleryImageName, GalleryImageData galleryImage, CancellationToken cancellationToken = default)
+        public virtual GalleryImageCreateOrUpdateOperation CreateOrUpdate(string galleryImageName, GalleryImageData galleryImage, bool waitForCompletion = true, CancellationToken cancellationToken = default)
         {
             if (galleryImageName == null)
             {
@@ -60,71 +61,14 @@ namespace Azure.ResourceManager.Compute
             }
 
             using var scope = _clientDiagnostics.CreateScope("GalleryImageContainer.CreateOrUpdate");
-            scope.Start();
-            try
-            {
-                var operation = StartCreateOrUpdate(galleryImageName, galleryImage, cancellationToken);
-                return operation.WaitForCompletion(cancellationToken);
-            }
-            catch (Exception e)
-            {
-                scope.Failed(e);
-                throw;
-            }
-        }
-
-        /// <summary> Create or update a gallery image definition. </summary>
-        /// <param name="galleryImageName"> The name of the gallery image definition to be created or updated. The allowed characters are alphabets and numbers with dots, dashes, and periods allowed in the middle. The maximum length is 80 characters. </param>
-        /// <param name="galleryImage"> Parameters supplied to the create or update gallery image operation. </param>
-        /// <param name="cancellationToken"> The cancellation token to use. </param>
-        /// <exception cref="ArgumentNullException"> <paramref name="galleryImageName"/> or <paramref name="galleryImage"/> is null. </exception>
-        public async virtual Task<Response<GalleryImage>> CreateOrUpdateAsync(string galleryImageName, GalleryImageData galleryImage, CancellationToken cancellationToken = default)
-        {
-            if (galleryImageName == null)
-            {
-                throw new ArgumentNullException(nameof(galleryImageName));
-            }
-            if (galleryImage == null)
-            {
-                throw new ArgumentNullException(nameof(galleryImage));
-            }
-
-            using var scope = _clientDiagnostics.CreateScope("GalleryImageContainer.CreateOrUpdate");
-            scope.Start();
-            try
-            {
-                var operation = await StartCreateOrUpdateAsync(galleryImageName, galleryImage, cancellationToken).ConfigureAwait(false);
-                return await operation.WaitForCompletionAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                scope.Failed(e);
-                throw;
-            }
-        }
-
-        /// <summary> Create or update a gallery image definition. </summary>
-        /// <param name="galleryImageName"> The name of the gallery image definition to be created or updated. The allowed characters are alphabets and numbers with dots, dashes, and periods allowed in the middle. The maximum length is 80 characters. </param>
-        /// <param name="galleryImage"> Parameters supplied to the create or update gallery image operation. </param>
-        /// <param name="cancellationToken"> The cancellation token to use. </param>
-        /// <exception cref="ArgumentNullException"> <paramref name="galleryImageName"/> or <paramref name="galleryImage"/> is null. </exception>
-        public virtual GalleryImageCreateOrUpdateOperation StartCreateOrUpdate(string galleryImageName, GalleryImageData galleryImage, CancellationToken cancellationToken = default)
-        {
-            if (galleryImageName == null)
-            {
-                throw new ArgumentNullException(nameof(galleryImageName));
-            }
-            if (galleryImage == null)
-            {
-                throw new ArgumentNullException(nameof(galleryImage));
-            }
-
-            using var scope = _clientDiagnostics.CreateScope("GalleryImageContainer.StartCreateOrUpdate");
             scope.Start();
             try
             {
                 var response = _restClient.CreateOrUpdate(Id.ResourceGroupName, Id.Name, galleryImageName, galleryImage, cancellationToken);
-                return new GalleryImageCreateOrUpdateOperation(Parent, _clientDiagnostics, Pipeline, _restClient.CreateCreateOrUpdateRequest(Id.ResourceGroupName, Id.Name, galleryImageName, galleryImage).Request, response);
+                var operation = new GalleryImageCreateOrUpdateOperation(Parent, _clientDiagnostics, Pipeline, _restClient.CreateCreateOrUpdateRequest(Id.ResourceGroupName, Id.Name, galleryImageName, galleryImage).Request, response);
+                if (waitForCompletion)
+                    operation.WaitForCompletion(cancellationToken);
+                return operation;
             }
             catch (Exception e)
             {
@@ -136,9 +80,10 @@ namespace Azure.ResourceManager.Compute
         /// <summary> Create or update a gallery image definition. </summary>
         /// <param name="galleryImageName"> The name of the gallery image definition to be created or updated. The allowed characters are alphabets and numbers with dots, dashes, and periods allowed in the middle. The maximum length is 80 characters. </param>
         /// <param name="galleryImage"> Parameters supplied to the create or update gallery image operation. </param>
+        /// <param name="waitForCompletion"> Waits for the completion of the long running operations. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="galleryImageName"/> or <paramref name="galleryImage"/> is null. </exception>
-        public async virtual Task<GalleryImageCreateOrUpdateOperation> StartCreateOrUpdateAsync(string galleryImageName, GalleryImageData galleryImage, CancellationToken cancellationToken = default)
+        public async virtual Task<GalleryImageCreateOrUpdateOperation> CreateOrUpdateAsync(string galleryImageName, GalleryImageData galleryImage, bool waitForCompletion = true, CancellationToken cancellationToken = default)
         {
             if (galleryImageName == null)
             {
@@ -149,12 +94,15 @@ namespace Azure.ResourceManager.Compute
                 throw new ArgumentNullException(nameof(galleryImage));
             }
 
-            using var scope = _clientDiagnostics.CreateScope("GalleryImageContainer.StartCreateOrUpdate");
+            using var scope = _clientDiagnostics.CreateScope("GalleryImageContainer.CreateOrUpdate");
             scope.Start();
             try
             {
                 var response = await _restClient.CreateOrUpdateAsync(Id.ResourceGroupName, Id.Name, galleryImageName, galleryImage, cancellationToken).ConfigureAwait(false);
-                return new GalleryImageCreateOrUpdateOperation(Parent, _clientDiagnostics, Pipeline, _restClient.CreateCreateOrUpdateRequest(Id.ResourceGroupName, Id.Name, galleryImageName, galleryImage).Request, response);
+                var operation = new GalleryImageCreateOrUpdateOperation(Parent, _clientDiagnostics, Pipeline, _restClient.CreateCreateOrUpdateRequest(Id.ResourceGroupName, Id.Name, galleryImageName, galleryImage).Request, response);
+                if (waitForCompletion)
+                    await operation.WaitForCompletionAsync(cancellationToken).ConfigureAwait(false);
+                return operation;
             }
             catch (Exception e)
             {
@@ -318,7 +266,7 @@ namespace Azure.ResourceManager.Compute
         /// <summary> List gallery image definitions in a gallery. </summary>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <returns> A collection of <see cref="GalleryImage" /> that may take multiple service requests to iterate over. </returns>
-        public Pageable<GalleryImage> GetAll(CancellationToken cancellationToken = default)
+        public virtual Pageable<GalleryImage> GetAll(CancellationToken cancellationToken = default)
         {
             Page<GalleryImage> FirstPageFunc(int? pageSizeHint)
             {
@@ -326,7 +274,7 @@ namespace Azure.ResourceManager.Compute
                 scope.Start();
                 try
                 {
-                    var response = _restClient.GetByGallery(Id.ResourceGroupName, Id.Name, cancellationToken: cancellationToken);
+                    var response = _restClient.GetAllByGallery(Id.ResourceGroupName, Id.Name, cancellationToken: cancellationToken);
                     return Page.FromValues(response.Value.Value.Select(value => new GalleryImage(Parent, value)), response.Value.NextLink, response.GetRawResponse());
                 }
                 catch (Exception e)
@@ -341,7 +289,7 @@ namespace Azure.ResourceManager.Compute
                 scope.Start();
                 try
                 {
-                    var response = _restClient.GetByGalleryNextPage(nextLink, Id.ResourceGroupName, Id.Name, cancellationToken: cancellationToken);
+                    var response = _restClient.GetAllByGalleryNextPage(nextLink, Id.ResourceGroupName, Id.Name, cancellationToken: cancellationToken);
                     return Page.FromValues(response.Value.Value.Select(value => new GalleryImage(Parent, value)), response.Value.NextLink, response.GetRawResponse());
                 }
                 catch (Exception e)
@@ -356,7 +304,7 @@ namespace Azure.ResourceManager.Compute
         /// <summary> List gallery image definitions in a gallery. </summary>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <returns> An async collection of <see cref="GalleryImage" /> that may take multiple service requests to iterate over. </returns>
-        public AsyncPageable<GalleryImage> GetAllAsync(CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<GalleryImage> GetAllAsync(CancellationToken cancellationToken = default)
         {
             async Task<Page<GalleryImage>> FirstPageFunc(int? pageSizeHint)
             {
@@ -364,7 +312,7 @@ namespace Azure.ResourceManager.Compute
                 scope.Start();
                 try
                 {
-                    var response = await _restClient.GetByGalleryAsync(Id.ResourceGroupName, Id.Name, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    var response = await _restClient.GetAllByGalleryAsync(Id.ResourceGroupName, Id.Name, cancellationToken: cancellationToken).ConfigureAwait(false);
                     return Page.FromValues(response.Value.Value.Select(value => new GalleryImage(Parent, value)), response.Value.NextLink, response.GetRawResponse());
                 }
                 catch (Exception e)
@@ -379,7 +327,7 @@ namespace Azure.ResourceManager.Compute
                 scope.Start();
                 try
                 {
-                    var response = await _restClient.GetByGalleryNextPageAsync(nextLink, Id.ResourceGroupName, Id.Name, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    var response = await _restClient.GetAllByGalleryNextPageAsync(nextLink, Id.ResourceGroupName, Id.Name, cancellationToken: cancellationToken).ConfigureAwait(false);
                     return Page.FromValues(response.Value.Value.Select(value => new GalleryImage(Parent, value)), response.Value.NextLink, response.GetRawResponse());
                 }
                 catch (Exception e)
@@ -397,7 +345,7 @@ namespace Azure.ResourceManager.Compute
         /// <param name="top"> The number of results to return. </param>
         /// <param name="cancellationToken"> A token to allow the caller to cancel the call to the service. The default value is <see cref="CancellationToken.None" />. </param>
         /// <returns> A collection of resource that may take multiple service requests to iterate over. </returns>
-        public Pageable<GenericResource> GetAllAsGenericResources(string nameFilter, string expand = null, int? top = null, CancellationToken cancellationToken = default)
+        public virtual Pageable<GenericResource> GetAllAsGenericResources(string nameFilter, string expand = null, int? top = null, CancellationToken cancellationToken = default)
         {
             using var scope = _clientDiagnostics.CreateScope("GalleryImageContainer.GetAllAsGenericResources");
             scope.Start();
@@ -420,7 +368,7 @@ namespace Azure.ResourceManager.Compute
         /// <param name="top"> The number of results to return. </param>
         /// <param name="cancellationToken"> A token to allow the caller to cancel the call to the service. The default value is <see cref="CancellationToken.None" />. </param>
         /// <returns> An async collection of resource that may take multiple service requests to iterate over. </returns>
-        public AsyncPageable<GenericResource> GetAllAsGenericResourcesAsync(string nameFilter, string expand = null, int? top = null, CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<GenericResource> GetAllAsGenericResourcesAsync(string nameFilter, string expand = null, int? top = null, CancellationToken cancellationToken = default)
         {
             using var scope = _clientDiagnostics.CreateScope("GalleryImageContainer.GetAllAsGenericResources");
             scope.Start();

@@ -46,9 +46,10 @@ namespace Azure.ResourceManager.Compute
         /// <summary> The operation to create or update the run command. </summary>
         /// <param name="runCommandName"> The name of the virtual machine run command. </param>
         /// <param name="runCommand"> Parameters supplied to the Create Virtual Machine RunCommand operation. </param>
+        /// <param name="waitForCompletion"> Waits for the completion of the long running operations. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="runCommandName"/> or <paramref name="runCommand"/> is null. </exception>
-        public virtual Response<VirtualMachineRunCommandVirtualMachine> CreateOrUpdate(string runCommandName, VirtualMachineRunCommandData runCommand, CancellationToken cancellationToken = default)
+        public virtual VirtualMachineRunCommandCreateOrUpdateOperation CreateOrUpdate(string runCommandName, VirtualMachineRunCommandData runCommand, bool waitForCompletion = true, CancellationToken cancellationToken = default)
         {
             if (runCommandName == null)
             {
@@ -60,71 +61,14 @@ namespace Azure.ResourceManager.Compute
             }
 
             using var scope = _clientDiagnostics.CreateScope("VirtualMachineRunCommandVirtualMachineContainer.CreateOrUpdate");
-            scope.Start();
-            try
-            {
-                var operation = StartCreateOrUpdate(runCommandName, runCommand, cancellationToken);
-                return operation.WaitForCompletion(cancellationToken);
-            }
-            catch (Exception e)
-            {
-                scope.Failed(e);
-                throw;
-            }
-        }
-
-        /// <summary> The operation to create or update the run command. </summary>
-        /// <param name="runCommandName"> The name of the virtual machine run command. </param>
-        /// <param name="runCommand"> Parameters supplied to the Create Virtual Machine RunCommand operation. </param>
-        /// <param name="cancellationToken"> The cancellation token to use. </param>
-        /// <exception cref="ArgumentNullException"> <paramref name="runCommandName"/> or <paramref name="runCommand"/> is null. </exception>
-        public async virtual Task<Response<VirtualMachineRunCommandVirtualMachine>> CreateOrUpdateAsync(string runCommandName, VirtualMachineRunCommandData runCommand, CancellationToken cancellationToken = default)
-        {
-            if (runCommandName == null)
-            {
-                throw new ArgumentNullException(nameof(runCommandName));
-            }
-            if (runCommand == null)
-            {
-                throw new ArgumentNullException(nameof(runCommand));
-            }
-
-            using var scope = _clientDiagnostics.CreateScope("VirtualMachineRunCommandVirtualMachineContainer.CreateOrUpdate");
-            scope.Start();
-            try
-            {
-                var operation = await StartCreateOrUpdateAsync(runCommandName, runCommand, cancellationToken).ConfigureAwait(false);
-                return await operation.WaitForCompletionAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                scope.Failed(e);
-                throw;
-            }
-        }
-
-        /// <summary> The operation to create or update the run command. </summary>
-        /// <param name="runCommandName"> The name of the virtual machine run command. </param>
-        /// <param name="runCommand"> Parameters supplied to the Create Virtual Machine RunCommand operation. </param>
-        /// <param name="cancellationToken"> The cancellation token to use. </param>
-        /// <exception cref="ArgumentNullException"> <paramref name="runCommandName"/> or <paramref name="runCommand"/> is null. </exception>
-        public virtual VirtualMachineRunCommandCreateOrUpdateOperation StartCreateOrUpdate(string runCommandName, VirtualMachineRunCommandData runCommand, CancellationToken cancellationToken = default)
-        {
-            if (runCommandName == null)
-            {
-                throw new ArgumentNullException(nameof(runCommandName));
-            }
-            if (runCommand == null)
-            {
-                throw new ArgumentNullException(nameof(runCommand));
-            }
-
-            using var scope = _clientDiagnostics.CreateScope("VirtualMachineRunCommandVirtualMachineContainer.StartCreateOrUpdate");
             scope.Start();
             try
             {
                 var response = _restClient.CreateOrUpdate(Id.ResourceGroupName, Id.Name, runCommandName, runCommand, cancellationToken);
-                return new VirtualMachineRunCommandCreateOrUpdateOperation(Parent, _clientDiagnostics, Pipeline, _restClient.CreateCreateOrUpdateRequest(Id.ResourceGroupName, Id.Name, runCommandName, runCommand).Request, response);
+                var operation = new VirtualMachineRunCommandCreateOrUpdateOperation(Parent, _clientDiagnostics, Pipeline, _restClient.CreateCreateOrUpdateRequest(Id.ResourceGroupName, Id.Name, runCommandName, runCommand).Request, response);
+                if (waitForCompletion)
+                    operation.WaitForCompletion(cancellationToken);
+                return operation;
             }
             catch (Exception e)
             {
@@ -136,9 +80,10 @@ namespace Azure.ResourceManager.Compute
         /// <summary> The operation to create or update the run command. </summary>
         /// <param name="runCommandName"> The name of the virtual machine run command. </param>
         /// <param name="runCommand"> Parameters supplied to the Create Virtual Machine RunCommand operation. </param>
+        /// <param name="waitForCompletion"> Waits for the completion of the long running operations. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="runCommandName"/> or <paramref name="runCommand"/> is null. </exception>
-        public async virtual Task<VirtualMachineRunCommandCreateOrUpdateOperation> StartCreateOrUpdateAsync(string runCommandName, VirtualMachineRunCommandData runCommand, CancellationToken cancellationToken = default)
+        public async virtual Task<VirtualMachineRunCommandCreateOrUpdateOperation> CreateOrUpdateAsync(string runCommandName, VirtualMachineRunCommandData runCommand, bool waitForCompletion = true, CancellationToken cancellationToken = default)
         {
             if (runCommandName == null)
             {
@@ -149,12 +94,15 @@ namespace Azure.ResourceManager.Compute
                 throw new ArgumentNullException(nameof(runCommand));
             }
 
-            using var scope = _clientDiagnostics.CreateScope("VirtualMachineRunCommandVirtualMachineContainer.StartCreateOrUpdate");
+            using var scope = _clientDiagnostics.CreateScope("VirtualMachineRunCommandVirtualMachineContainer.CreateOrUpdate");
             scope.Start();
             try
             {
                 var response = await _restClient.CreateOrUpdateAsync(Id.ResourceGroupName, Id.Name, runCommandName, runCommand, cancellationToken).ConfigureAwait(false);
-                return new VirtualMachineRunCommandCreateOrUpdateOperation(Parent, _clientDiagnostics, Pipeline, _restClient.CreateCreateOrUpdateRequest(Id.ResourceGroupName, Id.Name, runCommandName, runCommand).Request, response);
+                var operation = new VirtualMachineRunCommandCreateOrUpdateOperation(Parent, _clientDiagnostics, Pipeline, _restClient.CreateCreateOrUpdateRequest(Id.ResourceGroupName, Id.Name, runCommandName, runCommand).Request, response);
+                if (waitForCompletion)
+                    await operation.WaitForCompletionAsync(cancellationToken).ConfigureAwait(false);
+                return operation;
             }
             catch (Exception e)
             {
@@ -325,7 +273,7 @@ namespace Azure.ResourceManager.Compute
         /// <param name="expand"> The expand expression to apply on the operation. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <returns> A collection of <see cref="VirtualMachineRunCommandVirtualMachine" /> that may take multiple service requests to iterate over. </returns>
-        public Pageable<VirtualMachineRunCommandVirtualMachine> GetAll(string expand = null, CancellationToken cancellationToken = default)
+        public virtual Pageable<VirtualMachineRunCommandVirtualMachine> GetAll(string expand = null, CancellationToken cancellationToken = default)
         {
             Page<VirtualMachineRunCommandVirtualMachine> FirstPageFunc(int? pageSizeHint)
             {
@@ -333,7 +281,7 @@ namespace Azure.ResourceManager.Compute
                 scope.Start();
                 try
                 {
-                    var response = _restClient.GetByVirtualMachine(Id.ResourceGroupName, Id.Name, expand, cancellationToken: cancellationToken);
+                    var response = _restClient.GetAllByVirtualMachine(Id.ResourceGroupName, Id.Name, expand, cancellationToken: cancellationToken);
                     return Page.FromValues(response.Value.Value.Select(value => new VirtualMachineRunCommandVirtualMachine(Parent, value)), response.Value.NextLink, response.GetRawResponse());
                 }
                 catch (Exception e)
@@ -348,7 +296,7 @@ namespace Azure.ResourceManager.Compute
                 scope.Start();
                 try
                 {
-                    var response = _restClient.GetByVirtualMachineNextPage(nextLink, Id.ResourceGroupName, Id.Name, expand, cancellationToken: cancellationToken);
+                    var response = _restClient.GetAllByVirtualMachineNextPage(nextLink, Id.ResourceGroupName, Id.Name, expand, cancellationToken: cancellationToken);
                     return Page.FromValues(response.Value.Value.Select(value => new VirtualMachineRunCommandVirtualMachine(Parent, value)), response.Value.NextLink, response.GetRawResponse());
                 }
                 catch (Exception e)
@@ -364,7 +312,7 @@ namespace Azure.ResourceManager.Compute
         /// <param name="expand"> The expand expression to apply on the operation. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <returns> An async collection of <see cref="VirtualMachineRunCommandVirtualMachine" /> that may take multiple service requests to iterate over. </returns>
-        public AsyncPageable<VirtualMachineRunCommandVirtualMachine> GetAllAsync(string expand = null, CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<VirtualMachineRunCommandVirtualMachine> GetAllAsync(string expand = null, CancellationToken cancellationToken = default)
         {
             async Task<Page<VirtualMachineRunCommandVirtualMachine>> FirstPageFunc(int? pageSizeHint)
             {
@@ -372,7 +320,7 @@ namespace Azure.ResourceManager.Compute
                 scope.Start();
                 try
                 {
-                    var response = await _restClient.GetByVirtualMachineAsync(Id.ResourceGroupName, Id.Name, expand, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    var response = await _restClient.GetAllByVirtualMachineAsync(Id.ResourceGroupName, Id.Name, expand, cancellationToken: cancellationToken).ConfigureAwait(false);
                     return Page.FromValues(response.Value.Value.Select(value => new VirtualMachineRunCommandVirtualMachine(Parent, value)), response.Value.NextLink, response.GetRawResponse());
                 }
                 catch (Exception e)
@@ -387,7 +335,7 @@ namespace Azure.ResourceManager.Compute
                 scope.Start();
                 try
                 {
-                    var response = await _restClient.GetByVirtualMachineNextPageAsync(nextLink, Id.ResourceGroupName, Id.Name, expand, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    var response = await _restClient.GetAllByVirtualMachineNextPageAsync(nextLink, Id.ResourceGroupName, Id.Name, expand, cancellationToken: cancellationToken).ConfigureAwait(false);
                     return Page.FromValues(response.Value.Value.Select(value => new VirtualMachineRunCommandVirtualMachine(Parent, value)), response.Value.NextLink, response.GetRawResponse());
                 }
                 catch (Exception e)
@@ -405,7 +353,7 @@ namespace Azure.ResourceManager.Compute
         /// <param name="top"> The number of results to return. </param>
         /// <param name="cancellationToken"> A token to allow the caller to cancel the call to the service. The default value is <see cref="CancellationToken.None" />. </param>
         /// <returns> A collection of resource that may take multiple service requests to iterate over. </returns>
-        public Pageable<GenericResource> GetAllAsGenericResources(string nameFilter, string expand = null, int? top = null, CancellationToken cancellationToken = default)
+        public virtual Pageable<GenericResource> GetAllAsGenericResources(string nameFilter, string expand = null, int? top = null, CancellationToken cancellationToken = default)
         {
             using var scope = _clientDiagnostics.CreateScope("VirtualMachineRunCommandVirtualMachineContainer.GetAllAsGenericResources");
             scope.Start();
@@ -428,7 +376,7 @@ namespace Azure.ResourceManager.Compute
         /// <param name="top"> The number of results to return. </param>
         /// <param name="cancellationToken"> A token to allow the caller to cancel the call to the service. The default value is <see cref="CancellationToken.None" />. </param>
         /// <returns> An async collection of resource that may take multiple service requests to iterate over. </returns>
-        public AsyncPageable<GenericResource> GetAllAsGenericResourcesAsync(string nameFilter, string expand = null, int? top = null, CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<GenericResource> GetAllAsGenericResourcesAsync(string nameFilter, string expand = null, int? top = null, CancellationToken cancellationToken = default)
         {
             using var scope = _clientDiagnostics.CreateScope("VirtualMachineRunCommandVirtualMachineContainer.GetAllAsGenericResources");
             scope.Start();

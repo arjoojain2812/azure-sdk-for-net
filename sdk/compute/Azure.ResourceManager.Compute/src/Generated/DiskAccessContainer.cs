@@ -46,9 +46,10 @@ namespace Azure.ResourceManager.Compute
         /// <summary> Creates or updates a disk access resource. </summary>
         /// <param name="diskAccessName"> The name of the disk access resource that is being created. The name can&apos;t be changed after the disk encryption set is created. Supported characters for the name are a-z, A-Z, 0-9 and _. The maximum name length is 80 characters. </param>
         /// <param name="diskAccess"> disk access object supplied in the body of the Put disk access operation. </param>
+        /// <param name="waitForCompletion"> Waits for the completion of the long running operations. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="diskAccessName"/> or <paramref name="diskAccess"/> is null. </exception>
-        public virtual Response<DiskAccess> CreateOrUpdate(string diskAccessName, DiskAccessData diskAccess, CancellationToken cancellationToken = default)
+        public virtual DiskAccessCreateOrUpdateOperation CreateOrUpdate(string diskAccessName, DiskAccessData diskAccess, bool waitForCompletion = true, CancellationToken cancellationToken = default)
         {
             if (diskAccessName == null)
             {
@@ -60,71 +61,14 @@ namespace Azure.ResourceManager.Compute
             }
 
             using var scope = _clientDiagnostics.CreateScope("DiskAccessContainer.CreateOrUpdate");
-            scope.Start();
-            try
-            {
-                var operation = StartCreateOrUpdate(diskAccessName, diskAccess, cancellationToken);
-                return operation.WaitForCompletion(cancellationToken);
-            }
-            catch (Exception e)
-            {
-                scope.Failed(e);
-                throw;
-            }
-        }
-
-        /// <summary> Creates or updates a disk access resource. </summary>
-        /// <param name="diskAccessName"> The name of the disk access resource that is being created. The name can&apos;t be changed after the disk encryption set is created. Supported characters for the name are a-z, A-Z, 0-9 and _. The maximum name length is 80 characters. </param>
-        /// <param name="diskAccess"> disk access object supplied in the body of the Put disk access operation. </param>
-        /// <param name="cancellationToken"> The cancellation token to use. </param>
-        /// <exception cref="ArgumentNullException"> <paramref name="diskAccessName"/> or <paramref name="diskAccess"/> is null. </exception>
-        public async virtual Task<Response<DiskAccess>> CreateOrUpdateAsync(string diskAccessName, DiskAccessData diskAccess, CancellationToken cancellationToken = default)
-        {
-            if (diskAccessName == null)
-            {
-                throw new ArgumentNullException(nameof(diskAccessName));
-            }
-            if (diskAccess == null)
-            {
-                throw new ArgumentNullException(nameof(diskAccess));
-            }
-
-            using var scope = _clientDiagnostics.CreateScope("DiskAccessContainer.CreateOrUpdate");
-            scope.Start();
-            try
-            {
-                var operation = await StartCreateOrUpdateAsync(diskAccessName, diskAccess, cancellationToken).ConfigureAwait(false);
-                return await operation.WaitForCompletionAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                scope.Failed(e);
-                throw;
-            }
-        }
-
-        /// <summary> Creates or updates a disk access resource. </summary>
-        /// <param name="diskAccessName"> The name of the disk access resource that is being created. The name can&apos;t be changed after the disk encryption set is created. Supported characters for the name are a-z, A-Z, 0-9 and _. The maximum name length is 80 characters. </param>
-        /// <param name="diskAccess"> disk access object supplied in the body of the Put disk access operation. </param>
-        /// <param name="cancellationToken"> The cancellation token to use. </param>
-        /// <exception cref="ArgumentNullException"> <paramref name="diskAccessName"/> or <paramref name="diskAccess"/> is null. </exception>
-        public virtual DiskAccessCreateOrUpdateOperation StartCreateOrUpdate(string diskAccessName, DiskAccessData diskAccess, CancellationToken cancellationToken = default)
-        {
-            if (diskAccessName == null)
-            {
-                throw new ArgumentNullException(nameof(diskAccessName));
-            }
-            if (diskAccess == null)
-            {
-                throw new ArgumentNullException(nameof(diskAccess));
-            }
-
-            using var scope = _clientDiagnostics.CreateScope("DiskAccessContainer.StartCreateOrUpdate");
             scope.Start();
             try
             {
                 var response = _restClient.CreateOrUpdate(Id.ResourceGroupName, diskAccessName, diskAccess, cancellationToken);
-                return new DiskAccessCreateOrUpdateOperation(Parent, _clientDiagnostics, Pipeline, _restClient.CreateCreateOrUpdateRequest(Id.ResourceGroupName, diskAccessName, diskAccess).Request, response);
+                var operation = new DiskAccessCreateOrUpdateOperation(Parent, _clientDiagnostics, Pipeline, _restClient.CreateCreateOrUpdateRequest(Id.ResourceGroupName, diskAccessName, diskAccess).Request, response);
+                if (waitForCompletion)
+                    operation.WaitForCompletion(cancellationToken);
+                return operation;
             }
             catch (Exception e)
             {
@@ -136,9 +80,10 @@ namespace Azure.ResourceManager.Compute
         /// <summary> Creates or updates a disk access resource. </summary>
         /// <param name="diskAccessName"> The name of the disk access resource that is being created. The name can&apos;t be changed after the disk encryption set is created. Supported characters for the name are a-z, A-Z, 0-9 and _. The maximum name length is 80 characters. </param>
         /// <param name="diskAccess"> disk access object supplied in the body of the Put disk access operation. </param>
+        /// <param name="waitForCompletion"> Waits for the completion of the long running operations. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="diskAccessName"/> or <paramref name="diskAccess"/> is null. </exception>
-        public async virtual Task<DiskAccessCreateOrUpdateOperation> StartCreateOrUpdateAsync(string diskAccessName, DiskAccessData diskAccess, CancellationToken cancellationToken = default)
+        public async virtual Task<DiskAccessCreateOrUpdateOperation> CreateOrUpdateAsync(string diskAccessName, DiskAccessData diskAccess, bool waitForCompletion = true, CancellationToken cancellationToken = default)
         {
             if (diskAccessName == null)
             {
@@ -149,12 +94,15 @@ namespace Azure.ResourceManager.Compute
                 throw new ArgumentNullException(nameof(diskAccess));
             }
 
-            using var scope = _clientDiagnostics.CreateScope("DiskAccessContainer.StartCreateOrUpdate");
+            using var scope = _clientDiagnostics.CreateScope("DiskAccessContainer.CreateOrUpdate");
             scope.Start();
             try
             {
                 var response = await _restClient.CreateOrUpdateAsync(Id.ResourceGroupName, diskAccessName, diskAccess, cancellationToken).ConfigureAwait(false);
-                return new DiskAccessCreateOrUpdateOperation(Parent, _clientDiagnostics, Pipeline, _restClient.CreateCreateOrUpdateRequest(Id.ResourceGroupName, diskAccessName, diskAccess).Request, response);
+                var operation = new DiskAccessCreateOrUpdateOperation(Parent, _clientDiagnostics, Pipeline, _restClient.CreateCreateOrUpdateRequest(Id.ResourceGroupName, diskAccessName, diskAccess).Request, response);
+                if (waitForCompletion)
+                    await operation.WaitForCompletionAsync(cancellationToken).ConfigureAwait(false);
+                return operation;
             }
             catch (Exception e)
             {
@@ -318,7 +266,7 @@ namespace Azure.ResourceManager.Compute
         /// <summary> Lists all the disk access resources under a resource group. </summary>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <returns> A collection of <see cref="DiskAccess" /> that may take multiple service requests to iterate over. </returns>
-        public Pageable<DiskAccess> GetAll(CancellationToken cancellationToken = default)
+        public virtual Pageable<DiskAccess> GetAll(CancellationToken cancellationToken = default)
         {
             Page<DiskAccess> FirstPageFunc(int? pageSizeHint)
             {
@@ -326,7 +274,7 @@ namespace Azure.ResourceManager.Compute
                 scope.Start();
                 try
                 {
-                    var response = _restClient.GetByResourceGroup(Id.ResourceGroupName, cancellationToken: cancellationToken);
+                    var response = _restClient.GetAllByResourceGroup(Id.ResourceGroupName, cancellationToken: cancellationToken);
                     return Page.FromValues(response.Value.Value.Select(value => new DiskAccess(Parent, value)), response.Value.NextLink, response.GetRawResponse());
                 }
                 catch (Exception e)
@@ -341,7 +289,7 @@ namespace Azure.ResourceManager.Compute
                 scope.Start();
                 try
                 {
-                    var response = _restClient.GetByResourceGroupNextPage(nextLink, Id.ResourceGroupName, cancellationToken: cancellationToken);
+                    var response = _restClient.GetAllByResourceGroupNextPage(nextLink, Id.ResourceGroupName, cancellationToken: cancellationToken);
                     return Page.FromValues(response.Value.Value.Select(value => new DiskAccess(Parent, value)), response.Value.NextLink, response.GetRawResponse());
                 }
                 catch (Exception e)
@@ -356,7 +304,7 @@ namespace Azure.ResourceManager.Compute
         /// <summary> Lists all the disk access resources under a resource group. </summary>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <returns> An async collection of <see cref="DiskAccess" /> that may take multiple service requests to iterate over. </returns>
-        public AsyncPageable<DiskAccess> GetAllAsync(CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<DiskAccess> GetAllAsync(CancellationToken cancellationToken = default)
         {
             async Task<Page<DiskAccess>> FirstPageFunc(int? pageSizeHint)
             {
@@ -364,7 +312,7 @@ namespace Azure.ResourceManager.Compute
                 scope.Start();
                 try
                 {
-                    var response = await _restClient.GetByResourceGroupAsync(Id.ResourceGroupName, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    var response = await _restClient.GetAllByResourceGroupAsync(Id.ResourceGroupName, cancellationToken: cancellationToken).ConfigureAwait(false);
                     return Page.FromValues(response.Value.Value.Select(value => new DiskAccess(Parent, value)), response.Value.NextLink, response.GetRawResponse());
                 }
                 catch (Exception e)
@@ -379,7 +327,7 @@ namespace Azure.ResourceManager.Compute
                 scope.Start();
                 try
                 {
-                    var response = await _restClient.GetByResourceGroupNextPageAsync(nextLink, Id.ResourceGroupName, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    var response = await _restClient.GetAllByResourceGroupNextPageAsync(nextLink, Id.ResourceGroupName, cancellationToken: cancellationToken).ConfigureAwait(false);
                     return Page.FromValues(response.Value.Value.Select(value => new DiskAccess(Parent, value)), response.Value.NextLink, response.GetRawResponse());
                 }
                 catch (Exception e)
@@ -397,7 +345,7 @@ namespace Azure.ResourceManager.Compute
         /// <param name="top"> The number of results to return. </param>
         /// <param name="cancellationToken"> A token to allow the caller to cancel the call to the service. The default value is <see cref="CancellationToken.None" />. </param>
         /// <returns> A collection of resource that may take multiple service requests to iterate over. </returns>
-        public Pageable<GenericResource> GetAllAsGenericResources(string nameFilter, string expand = null, int? top = null, CancellationToken cancellationToken = default)
+        public virtual Pageable<GenericResource> GetAllAsGenericResources(string nameFilter, string expand = null, int? top = null, CancellationToken cancellationToken = default)
         {
             using var scope = _clientDiagnostics.CreateScope("DiskAccessContainer.GetAllAsGenericResources");
             scope.Start();
@@ -420,7 +368,7 @@ namespace Azure.ResourceManager.Compute
         /// <param name="top"> The number of results to return. </param>
         /// <param name="cancellationToken"> A token to allow the caller to cancel the call to the service. The default value is <see cref="CancellationToken.None" />. </param>
         /// <returns> An async collection of resource that may take multiple service requests to iterate over. </returns>
-        public AsyncPageable<GenericResource> GetAllAsGenericResourcesAsync(string nameFilter, string expand = null, int? top = null, CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<GenericResource> GetAllAsGenericResourcesAsync(string nameFilter, string expand = null, int? top = null, CancellationToken cancellationToken = default)
         {
             using var scope = _clientDiagnostics.CreateScope("DiskAccessContainer.GetAllAsGenericResources");
             scope.Start();

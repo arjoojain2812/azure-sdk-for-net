@@ -21,7 +21,8 @@ namespace Azure.ResourceManager.Compute.Tests
         {
             var container = (await CreateResourceGroupAsync()).GetDisks();
             var input = ResourceDataHelper.GetEmptyDiskData(DefaultLocation, new Dictionary<string, string>() { { "key", "value" } });
-            return await container.CreateOrUpdateAsync(diskName, input);
+            var lro = await container.CreateOrUpdateAsync(diskName, input);
+            return lro.Value;
         }
 
         [TestCase]
@@ -31,16 +32,6 @@ namespace Azure.ResourceManager.Compute.Tests
             var diskName = Recording.GenerateAssetName("testDisk-");
             var disk = await CreateDiskAsync(diskName);
             await disk.DeleteAsync();
-        }
-
-        [TestCase]
-        [RecordedTest]
-        public async Task StartDelete()
-        {
-            var diskName = Recording.GenerateAssetName("testDisk-");
-            var disk = await CreateDiskAsync(diskName);
-            var deleteOp = await disk.StartDeleteAsync();
-            await deleteOp.WaitForCompletionResponseAsync();
         }
 
         [TestCase]
@@ -56,7 +47,6 @@ namespace Azure.ResourceManager.Compute.Tests
 
         [TestCase]
         [RecordedTest]
-        [Ignore("There is a bug in OperationInternals causing we cannot handle this kind of PATCH LRO right now")]
         public async Task Update()
         {
             var diskName = Recording.GenerateAssetName("testDisk-");
@@ -67,7 +57,8 @@ namespace Azure.ResourceManager.Compute.Tests
             {
                 DiskSizeGB = newDiskSize
             };
-            Disk updatedDisk = await disk.UpdateAsync(update);
+            var lro = await disk.UpdateAsync(update);
+            Disk updatedDisk = lro.Value;
 
             Assert.AreEqual(newDiskSize, updatedDisk.Data.DiskSizeGB);
         }
