@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Management.DataBoxEdge
             {
                 Certificate = Convert.ToBase64String(cert.RawData)
             };
-             
+
             return operations.UploadCertificate(resourceName, request,
                resourceGroupName);
         }
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Management.DataBoxEdge
         /// <param name="serializedCertificate"></param>
         /// <param name="uploadCertificate"></param>
         /// <returns></returns>
-        public static ActivationKeyComponents GetVaultCredentials(string resourceGroupName,
+        private static ActivationKeyComponents GetVaultCredentials(string resourceGroupName,
             string resourceName, string resourceLocation, string serializedCertificate, UploadCertificateResponse uploadCertificate, string subscriptionId, string cik)
         {
             const string AudienceFormat = @"https://azuredataboxedge/{0}/{1}/{2}";
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Management.DataBoxEdge
     /// <summary>
     /// Components of Activation Key
     /// </summary>
-    public class ActivationKeyComponents
+    class ActivationKeyComponents
     {
         #region Properties
 
